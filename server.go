@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"syscall"
 )
 
 const (
@@ -99,11 +100,35 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 	p := s.getFilePath(r, idt)
 
 	fd, err := os.Open(p)
+
+	if err == syscall.ENOENT {
+		log.Error(err.Error())
+		http.Error(w, "", http.StatusNotFound)
+		return
+	}
+
 	if err != nil {
 		log.Error(err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
+
+	log.Infof("opened %s", p)
+
+	info, err := fd.Stat()
+	if err != nil {
+		log.Error(err)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	if info.IsDir() {
+		log.Errorf("%s is a directory", p)
+		http.Error(w, "", http.StatusBadRequest)
+		return
+	}
+
+	log.Infof("stated %s got size %d", p, info.Size())
 
 	defer fd.Close()
 
@@ -114,7 +139,8 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	w.WriteHeader(200)
+	log.Infof("copied %s to res.body", p)
+
 }
 
 func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http.Request,
@@ -125,7 +151,7 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 	idt, err := s.getIdentityFromReq(r)
 	if err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusUnauthorized)
+		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
