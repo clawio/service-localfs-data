@@ -56,20 +56,37 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	defer tmpFile.Close()
+	log.Infof("created tmp file %s", tmpFn)
 
-	_, err = io.CopyN(tmpFile, r.Body, r.ContentLength)
+	// TODO(labkode) Sometimes ContentLength = -1 because it is a binary
+	// upload with TransferEncoding: chunked.
+	// Instead using Copy we shoudl use a LimitedReader with a max file upload
+	// configuration value.
+	_, err = io.Copy(tmpFile, r.Body)
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	log.Infof("copied r.body into tmp file %s", tmpFn)
+
+	err = tmpFile.Close()
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("closed tmp file %s", tmpFn)
+
 	if err = os.Rename(tmpFn, p); err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	log.Infof("renamed tmp file %s to %s", tmpFn, p)
 
 	w.WriteHeader(http.StatusCreated)
 }
