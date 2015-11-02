@@ -52,7 +52,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	tmpFn, tmpFile, err := s.tmpFile()
 	if err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	_, err = io.Copy(tmpFile, r.Body)
 	if err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -74,7 +74,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	err = tmpFile.Close()
 	if err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	if err = os.Rename(tmpFn, p); err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -101,7 +101,7 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 	fd, err := os.Open(p)
 	if err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -110,7 +110,7 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 	_, err = io.Copy(w, fd)
 	if err != nil {
 		log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
