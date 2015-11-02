@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/clawio/service.auth/lib"
 	"io"
 	"net/http"
 	"os"
@@ -9,23 +9,28 @@ import (
 	"strings"
 )
 
-func getTokenFromReq(r *http.Request) (string, error) {
+func (s *server) getIdentityFromReq(r *http.Request) (*lib.Identity, error) {
+
+	var token string
 
 	// Look for an Authorization header
 	if ah := r.Header.Get("Authorization"); ah != "" {
 		// Should be a bearer token
 		if len(ah) > 6 && strings.ToUpper(ah[0:6]) == "BEARER" {
-			return ah[7:], nil
+			token = ah[7:]
 		}
 	}
 
-	// Look for "auth_token" parameter
-	r.ParseMultipartForm(10e6)
-	if tokStr := r.Form.Get("auth_token"); tokStr != "" {
-		return tokStr, nil
+	if token == "" {
+		// Look for "auth_token" parameter
+		r.ParseMultipartForm(10e6)
+		if tokStr := r.Form.Get("access_token"); tokStr != "" {
+			token = tokStr
+		}
+
 	}
 
-	return "", fmt.Errorf("no auth token in req")
+	return lib.ParseToken(token, s.p.sharedSecret)
 }
 
 func getReqPath(r *http.Request) string {
@@ -36,8 +41,12 @@ func getReqPath(r *http.Request) string {
 	return ""
 }
 
-func (s *server) getFilePath(r *http.Request) string {
-	return path.Join(s.p.dataDir, path.Clean(getReqPath(r)))
+func (s *server) getFilePath(r *http.Request, idt *lib.Identity) string {
+	return path.Join(s.getHome(idt), path.Clean(getReqPath(r)))
+}
+
+func (s *server) getHome(idt *lib.Identity) string {
+	return path.Join(s.p.dataDir, path.Join(idt.Pid))
 }
 
 func copyFile(src, dst string, size int64) (err error) {

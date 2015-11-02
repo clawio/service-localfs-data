@@ -45,7 +45,9 @@ func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.
 func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	log := xlog.FromContext(ctx)
-	p := s.getFilePath(r)
+	idt := lib.MustFromContext(ctx)
+
+	p := s.getFilePath(r, idt)
 
 	tmpFn, tmpFile, err := s.tmpFile()
 	if err != nil {
@@ -75,8 +77,9 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	log := xlog.FromContext(ctx)
+	idt := lib.MustFromContext(ctx)
 
-	p := s.getFilePath(r)
+	p := s.getFilePath(r, idt)
 
 	fd, err := os.Open(p)
 	if err != nil {
@@ -102,14 +105,7 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 
 	log := xlog.FromContext(ctx)
 
-	token, err := getTokenFromReq(r)
-	if err != nil {
-		log.Error(err)
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	idt, err := lib.ParseToken(token, s.p.sharedSecret)
+	idt, err := s.getIdentityFromReq(r)
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusUnauthorized)
