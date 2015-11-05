@@ -162,16 +162,6 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 		return
 	}
 
-	ctx = authlib.NewContext(ctx, idt)
-	next(ctx, w, r)
-}
-
-func (s *server) accessHandler(ctx context.Context, w http.ResponseWriter, r *http.Request,
-	next func(ctx context.Context, w http.ResponseWriter, r *http.Request)) {
-
-	log := xlog.FromContext(ctx)
-	idt := authlib.MustFromContext(ctx)
-
 	p := getPathFromReq(r) // already sanitized
 
 	if !isUnderHome(p, idt) {
@@ -188,6 +178,7 @@ func (s *server) accessHandler(ctx context.Context, w http.ResponseWriter, r *ht
 
 	log.Infof("path is %s", p)
 
+	ctx = authlib.NewContext(ctx, idt)
 	ctx = lib.NewContext(ctx, p)
 	next(ctx, w, r)
 }
