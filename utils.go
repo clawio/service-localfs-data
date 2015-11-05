@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.google.com/p/go-uuid/uuid"
 	"github.com/clawio/service.auth/lib"
 	"io"
 	"net/http"
@@ -98,4 +99,14 @@ func copyDir(src, dst string) (err error) {
 		}
 	}
 	return
+}
+
+// getTraceID returns the traceID that comes in the request
+// or generate a new one
+func getTraceID(r *http.Request) string {
+	traceID := r.Header.Get("CIO-TraceID")
+	if traceID == "" {
+		return uuid.New()
+	}
+	return traceID
 }

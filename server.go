@@ -34,6 +34,9 @@ type server struct {
 
 func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
+	log := xlog.FromContext(ctx)
+	log.SetField("trace", getTraceID(r))
+
 	if strings.ToUpper(r.Method) == "PUT" {
 		s.authHandler(ctx, w, r, s.upload)
 	} else if strings.ToUpper(r.Method) == "GET" {
