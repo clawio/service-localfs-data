@@ -31,7 +31,7 @@ func getHome(idt *lib.Identity) string {
 		panic("idt.Pid must not be empty")
 	}
 
-	return path.Join("local", "users", string(pid[0]), pid)
+	return path.Join("/local", "users", string(pid[0]), pid)
 }
 
 func isUnderHome(p string, idt *lib.Identity) bool {
