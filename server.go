@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/clawio/service.auth/lib"
+	authlib "github.com/clawio/service.auth/lib"
+	"github.com/clawio/service.localstore.data/lib"
 	"github.com/rs/xlog"
 	"golang.org/x/net/context"
 	"io"
@@ -46,9 +47,11 @@ func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.
 func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	log := xlog.FromContext(ctx)
-	idt := lib.MustFromContext(ctx)
+	p := lib.MustFromContext(ctx)
 
-	p := s.getFilePath(r, idt)
+	pp := s.getPhysicalPath(p)
+
+	log.Infof("physical path is %s", pp)
 
 	tmpFn, tmpFile, err := s.tmpFile()
 	if err != nil {
@@ -70,7 +73,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	log.Infof("copied r.body into tmp file %s", tmpFn)
+	log.Infof("copied r.Body into tmp file %s", tmpFn)
 
 	err = tmpFile.Close()
 	if err != nil {
@@ -81,13 +84,13 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	log.Infof("closed tmp file %s", tmpFn)
 
-	if err = os.Rename(tmpFn, p); err != nil {
+	if err = os.Rename(tmpFn, pp); err != nil {
 		log.Error(err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
-	log.Infof("renamed tmp file %s to %s", tmpFn, p)
+	log.Infof("renamed tmp file %s to %s", tmpFn, pp)
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -95,12 +98,13 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	log := xlog.FromContext(ctx)
-	idt := lib.MustFromContext(ctx)
+	p := lib.MustFromContext(ctx)
 
-	p := s.getFilePath(r, idt)
+	pp := s.getPhysicalPath(p)
 
-	fd, err := os.Open(p)
+	log.Info("physical path is %s", pp)
 
+	fd, err := os.Open(pp)
 	if err == syscall.ENOENT {
 		log.Error(err.Error())
 		http.Error(w, "", http.StatusNotFound)
@@ -113,7 +117,7 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	log.Infof("opened %s", p)
+	log.Infof("opened %s", pp)
 
 	info, err := fd.Stat()
 	if err != nil {
@@ -122,13 +126,13 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	log.Infof("stated %s got size %d", pp, info.Size())
+
 	if info.IsDir() {
-		log.Errorf("%s is a directory", p)
+		log.Errorf("%s is a directory", pp)
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
-
-	log.Infof("stated %s got size %d", p, info.Size())
 
 	defer fd.Close()
 
@@ -139,7 +143,7 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	log.Infof("copied %s to res.body", p)
+	log.Infof("copied %s to res.body", pp)
 
 }
 
@@ -155,7 +159,33 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 		return
 	}
 
-	ctx = lib.NewContext(ctx, idt)
+	ctx = authlib.NewContext(ctx, idt)
+	next(ctx, w, r)
+}
+
+func (s *server) accessHandler(ctx context.Context, w http.ResponseWriter, r *http.Request,
+	next func(ctx context.Context, w http.ResponseWriter, r *http.Request)) {
+
+	log := xlog.FromContext(ctx)
+	idt := authlib.MustFromContext(ctx)
+
+	p := getPathFromReq(r) // already sanitized
+
+	if !isUnderHome(p, idt) {
+		// TODO use here share service
+		log.Warn("access denied to %s accessing %s", *idt, p)
+		http.Error(w, "", http.StatusForbidden)
+		return
+	}
+
+	if p == getHome(idt) {
+		http.Error(w, "", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Infof("path is %s", p)
+
+	ctx = lib.NewContext(ctx, p)
 	next(ctx, w, r)
 }
 
@@ -169,4 +199,32 @@ func (s *server) tmpFile() (string, *os.File, error) {
 	fn := path.Join(path.Clean(file.Name()))
 
 	return fn, file, nil
+}
+
+func (s *server) getPhysicalPath(p string) string {
+	return path.Join(s.p.dataDir, path.Clean(p))
+}
+
+func (s *server) getIdentityFromReq(r *http.Request) (*authlib.Identity, error) {
+
+	var token string
+
+	// Look for an Authorization header
+	if ah := r.Header.Get("Authorization"); ah != "" {
+		// Should be a bearer token
+		if len(ah) > 6 && strings.ToUpper(ah[0:6]) == "BEARER" {
+			token = ah[7:]
+		}
+	}
+
+	if token == "" {
+		// Look for "auth_token" parameter
+		r.ParseMultipartForm(10e6)
+		if tokStr := r.Form.Get("access_token"); tokStr != "" {
+			token = tokStr
+		}
+
+	}
+
+	return authlib.ParseToken(token, s.p.sharedSecret)
 }

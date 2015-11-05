@@ -9,44 +9,39 @@ import (
 	"strings"
 )
 
-func (s *server) getIdentityFromReq(r *http.Request) (*lib.Identity, error) {
-
-	var token string
-
-	// Look for an Authorization header
-	if ah := r.Header.Get("Authorization"); ah != "" {
-		// Should be a bearer token
-		if len(ah) > 6 && strings.ToUpper(ah[0:6]) == "BEARER" {
-			token = ah[7:]
-		}
-	}
-
-	if token == "" {
-		// Look for "auth_token" parameter
-		r.ParseMultipartForm(10e6)
-		if tokStr := r.Form.Get("access_token"); tokStr != "" {
-			token = tokStr
-		}
-
-	}
-
-	return lib.ParseToken(token, s.p.sharedSecret)
-}
-
-func getReqPath(r *http.Request) string {
+func getPathFromReq(r *http.Request) string {
 
 	if len(r.URL.Path) > len(endPoint) {
-		return strings.TrimPrefix(r.URL.Path[len(endPoint):], "/")
+		return path.Clean(strings.TrimPrefix(r.URL.Path[len(endPoint):], "/"))
 	}
 	return ""
 }
 
-func (s *server) getFilePath(r *http.Request, idt *lib.Identity) string {
-	return path.Join(s.getHome(idt), path.Clean(getReqPath(r)))
+// getHome returns the user home directory.
+// the logical home has this layout.
+// local/users/<letter>/<pid>
+// Example: /local/users/o/ourense
+// idt.Pid must be always non-empty
+func getHome(idt *lib.Identity) string {
+
+	pid := path.Clean(idt.Pid)
+
+	if pid == "" {
+		panic("idt.Pid must not be empty")
+	}
+
+	return path.Join("local", "users", string(pid[0]), pid)
 }
 
-func (s *server) getHome(idt *lib.Identity) string {
-	return path.Join(s.p.dataDir, path.Join(idt.Pid))
+func isUnderHome(p string, idt *lib.Identity) bool {
+
+	p = path.Clean(p)
+
+	if strings.HasPrefix(p, getHome(idt)) {
+		return true
+	}
+
+	return false
 }
 
 func copyFile(src, dst string, size int64) (err error) {
