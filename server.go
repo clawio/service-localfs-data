@@ -166,7 +166,7 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 
 	if !isUnderHome(p, idt) {
 		// TODO use here share service
-		log.Warn("access denied to %s accessing %s", *idt, p)
+		log.Warnf("access denied to %s accessing %s", *idt, p)
 		http.Error(w, "", http.StatusForbidden)
 		return
 	}
