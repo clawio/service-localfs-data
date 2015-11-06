@@ -48,32 +48,34 @@ func printEnviron(e *environ) {
 	log.Printf("%s=%s", sharedSecretEnvar, "******")
 }
 
+func setUpLog() {
+
+}
+
 func main() {
 
-	c := xhandler.Chain{}
-
-	// Add close notifier handler so context is cancelled when the client closes
-	// the connection
-	c.UseC(xhandler.CloseHandler)
-
-	// Install the logger handler with default output on the console
-	lh := xlog.NewHandler(xlog.LevelDebug)
-
-	// Set some global env fields
 	host, _ := os.Hostname()
-	lh.SetFields(xlog.F{
-		"svc":  serviceID,
-		"host": host,
-	})
+	conf := xlog.Config{
+		// Log info level and higher
+		Level: xlog.LevelDebug,
+		// Set some global env fields
+		Fields: xlog.F{
+			"svc":  serviceID,
+			"host": host,
+		},
+		// Output everything on console
+		Output: xlog.NewOutputChannel(xlog.NewConsoleOutput()),
+	}
 
-	c.UseC(lh.HandlerC)
+	xl := xlog.New(conf)
+
+	c := xhandler.Chain{}
+	c.UseC(xlog.NewHandler(conf))
+	c.UseC(xhandler.CloseHandler)
+	c.UseC(xaccess.NewHandler())
 
 	// Plug the xlog handler's input to Go's default logger
-	log.SetOutput(lh.NewLogger())
-
-	c.UseC(lh.HandlerC)
-
-	c.UseC(xaccess.NewHandler())
+	log.SetOutput(xl)
 
 	log.Printf("Service %s started", serviceID)
 
