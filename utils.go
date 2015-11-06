@@ -13,7 +13,7 @@ import (
 func getPathFromReq(r *http.Request) string {
 
 	if len(r.URL.Path) > len(endPoint) {
-		return path.Clean(strings.TrimPrefix(r.URL.Path[len(endPoint):], "/"))
+		return path.Clean(r.URL.Path[len(endPoint):])
 	}
 	return ""
 }
