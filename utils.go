@@ -11,11 +11,7 @@ import (
 )
 
 func getPathFromReq(r *http.Request) string {
-
-	if len(r.URL.Path) > len(endPoint) {
-		return path.Clean(r.URL.Path[len(endPoint):])
-	}
-	return ""
+	return path.Clean(r.URL.Path)
 }
 
 // getHome returns the user home directory.
