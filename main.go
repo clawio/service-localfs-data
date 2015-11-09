@@ -97,7 +97,11 @@ func main() {
 	p.prop = env.prop
 	p.sharedSecret = env.sharedSecret
 
-	srv := newServer(p)
+	srv, err := newServer(p)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	http.Handle(endPoint, c.Handler(srv))
 

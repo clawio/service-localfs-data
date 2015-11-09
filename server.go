@@ -3,8 +3,10 @@ package main
 import (
 	authlib "github.com/clawio/service.auth/lib"
 	"github.com/clawio/service.localstore.data/lib"
+	pb "github.com/clawio/service.localstore.prop/proto"
 	"github.com/rs/xlog"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,12 +27,27 @@ type newServerParams struct {
 	sharedSecret string
 }
 
-func newServer(p *newServerParams) *server {
-	return &server{p}
+func newServer(p *newServerParams) (*server, error) {
+
+	con, err := grpc.Dial(p.prop, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	defer con.Close()
+
+	c := pb.NewPropClient(con)
+
+	s := &server{}
+	s.p = p
+	s.propClient = c
+
+	return s, nil
 }
 
 type server struct {
-	p *newServerParams
+	p          *newServerParams
+	propClient pb.PropClient
 }
 
 func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {

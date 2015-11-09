@@ -7,8 +7,12 @@ ENV CLAWIO_LOCALSTOREDATA_PORT 57002
 ENV CLAWIO_LOCALSTOREDATA_PROP "service-localstore-prop"
 ENV CLAWIO_SHAREDSECRET secret
 
+ADD . /go/src/github.com/clawio/service.localstore.data
+WORKDIR /go/src/github.com/clawio/service.localstore.data
 
-RUN go get -u github.com/clawio/service.localstore.data
+RUN go get -u github.com/tools/godep
+RUN godep restore
+RUN go install
 
 ENTRYPOINT /go/bin/service.localstore.data
 
