@@ -84,11 +84,12 @@ func main() {
 	log.Printf("Service %s started", serviceID)
 
 	env, err := getEnviron()
-	printEnviron(env)
-
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+
+	printEnviron(env)
 
 	p := &newServerParams{}
 	p.dataDir = env.dataDir
@@ -100,5 +101,5 @@ func main() {
 
 	http.Handle(endPoint, c.Handler(srv))
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", env.port), nil))
+	fmt.Fprintln(os.Stderr, http.ListenAndServe(fmt.Sprintf(":%d", env.port), nil))
 }
