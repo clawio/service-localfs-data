@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package localstore;
+
+service Prop {
+    rpc Put(PutReq) returns (Void) {}
+    //rpc Get(GetReq) returns (Record) {}
+    //rpc Cp(CpReq) returns (Void) {}
+    //rpc Mv(MvReq) returns (Void) {}
+    //rpc Rm(RmReq) returns (Void) {}
+}
+
+message Void {
+}
+
+
+message PutReq {
+    string access_token = 1;
+    string path = 2;
+    string checksum = 3;
+}
+
+/*
+message GetReq {
+    string access_token = 1;
+    string path = 2;
+}
+
+
+message RmReq {
+    string access_token = 1;
+    string path = 2;
+}
+
+message MvReq {
+    string access_token = 1;
+    string src = 2;
+    string dst = 3;
+}
+
+message CpReq {
+    string access_token = 1;
+    string src = 2;
+    string dst = 3;
+}
+
+message Record {
+    string id = 1;
+    string path = 2;
+    string checksum = 3;
+    uint32 modified = 4;
+    string etag = 5; 
+}
+*/
+

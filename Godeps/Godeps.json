@@ -1,0 +1,69 @@
+{
+	"ImportPath": "github.com/clawio/service.localstore.data",
+	"GoVersion": "go1.5",
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/go-uuid/uuid",
+			"Comment": "null-15",
+			"Rev": "35bc42037350f0078e3c974c6ea690f1926603ab"
+		},
+		{
+			"ImportPath": "github.com/clawio/service.auth/lib",
+			"Rev": "59b2672ba44edebdc97f2a55f56d716d7c8ea33b"
+		},
+		{
+			"ImportPath": "github.com/clawio/service.localstore.prop/proto",
+			"Rev": "d0de9dd04e0a72d7afb87f67364750ad11b808c6"
+		},
+		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v2.3.0-3-g3b55c4a",
+			"Rev": "3b55c4adf0c509e95f815b0cbb36424c7d49c73c"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "5baca1b63153b1a82014546382edbdd302b138b6"
+		},
+		{
+			"ImportPath": "github.com/rs/xaccess",
+			"Rev": "209e73e1a62aae2725ec615ec9d83e0a9f4362ad"
+		},
+		{
+			"ImportPath": "github.com/rs/xhandler",
+			"Rev": "8431b30f293907f6613667c03df1f089e0fb8741"
+		},
+		{
+			"ImportPath": "github.com/rs/xlog",
+			"Rev": "8c68485b36cc494d36e9d77a02bcd7df12848ac8"
+		},
+		{
+			"ImportPath": "github.com/rs/xstats",
+			"Rev": "e0eac909e8830bc57152e8bb72b03fa2b1abe0b9"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji/web/mutil",
+			"Comment": "v0.9.0-29-g46b46e0",
+			"Rev": "46b46e00f46dda650e04f0bceeb7c40732cd5988"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
+		},
+		{
+			"ImportPath": "golang.org/x/net/http2",
+			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
+		},
+		{
+			"ImportPath": "golang.org/x/net/internal/timeseries",
+			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
+		},
+		{
+			"ImportPath": "golang.org/x/net/trace",
+			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc",
+			"Rev": "1f1a4999ca75ba4fd6d5c91233383a170034a1a5"
+		}
+	]
+}
