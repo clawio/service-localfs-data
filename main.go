@@ -45,11 +45,11 @@ func getEnviron() (*environ, error) {
 }
 
 func printEnviron(e *environ) {
-	log.Printf("%s=%s", dataDirEnvar, e.dataDir)
-	log.Printf("%s=%s", tmpDirEnvar, e.tmpDir)
-	log.Printf("%s=%d", portEnvar, e.port)
-	log.Printf("%s=%s", propEnvar, e.prop)
-	log.Printf("%s=%s", sharedSecretEnvar, "******")
+	log.Printf("%s=%s\n", dataDirEnvar, e.dataDir)
+	log.Printf("%s=%s\n", tmpDirEnvar, e.tmpDir)
+	log.Printf("%s=%d\n", portEnvar, e.port)
+	log.Printf("%s=%s\n", propEnvar, e.prop)
+	log.Printf("%s=%s\n", sharedSecretEnvar, "******")
 }
 
 func setUpLog() {
@@ -90,7 +90,6 @@ func main() {
 	}
 
 	printEnviron(env)
-
 	p := &newServerParams{}
 	p.dataDir = env.dataDir
 	p.tmpDir = env.tmpDir
@@ -104,6 +103,5 @@ func main() {
 	}
 
 	http.Handle(endPoint, c.Handler(srv))
-
 	fmt.Fprintln(os.Stderr, http.ListenAndServe(fmt.Sprintf(":%d", env.port), nil))
 }

@@ -14,6 +14,7 @@ type key int
 // arbitrary.  If this package defined other context keys, they would have
 // different integer values.
 const idtKey key = 0
+const tokenKey = 1
 
 // NewContext returns a new Context carrying an Identity pat.
 func NewContext(ctx context.Context, idt *Identity) context.Context {
@@ -35,6 +36,23 @@ func MustFromContext(ctx context.Context) *Identity {
 		panic("identity is not registered")
 	}
 	return idt
+}
+
+func NewTokenContext(ctx context.Context, token string) context.Context {
+	return context.WithValue(ctx, tokenKey, token)
+}
+
+func FromTokenContext(ctx context.Context) (string, bool) {
+	t, ok := ctx.Value(tokenKey).(string)
+	return t, ok
+}
+
+func MustFromTokenContext(ctx context.Context) string {
+	t, ok := ctx.Value(tokenKey).(string)
+	if !ok {
+		panic("token is not registered")
+	}
+	return t
 }
 
 func ParseToken(t, secret string) (*Identity, error) {

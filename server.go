@@ -29,25 +29,14 @@ type newServerParams struct {
 
 func newServer(p *newServerParams) (*server, error) {
 
-	con, err := grpc.Dial(p.prop, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
-	}
-
-	defer con.Close()
-
-	c := pb.NewPropClient(con)
-
 	s := &server{}
 	s.p = p
-	s.propClient = c
 
 	return s, nil
 }
 
 type server struct {
-	p          *newServerParams
-	propClient pb.PropClient
+	p *newServerParams
 }
 
 func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -112,6 +101,31 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	log.Infof("renamed tmp file %s to %s", tmpFn, pp)
+
+	con, err := grpc.Dial(s.p.prop, grpc.WithInsecure())
+	if err != nil {
+		log.Error(err)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+	defer con.Close()
+
+	log.Infof("created connection to prop")
+
+	client := pb.NewPropClient(con)
+
+	in := &pb.PutReq{}
+	in.Path = p
+	in.AccessToken = authlib.MustFromTokenContext(ctx)
+
+	_, err = client.Put(ctx, in)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("putted path %s into prop", p)
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -198,6 +212,7 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 
 	ctx = authlib.NewContext(ctx, idt)
 	ctx = lib.NewContext(ctx, p)
+	ctx = authlib.NewTokenContext(ctx, s.getTokenFromReq(r))
 	next(ctx, w, r)
 }
 
@@ -217,7 +232,7 @@ func (s *server) getPhysicalPath(p string) string {
 	return path.Join(s.p.dataDir, path.Clean(p))
 }
 
-func (s *server) getIdentityFromReq(r *http.Request) (*authlib.Identity, error) {
+func (s *server) getTokenFromReq(r *http.Request) string {
 
 	var token string
 
@@ -238,5 +253,9 @@ func (s *server) getIdentityFromReq(r *http.Request) (*authlib.Identity, error) 
 
 	}
 
-	return authlib.ParseToken(token, s.p.sharedSecret)
+	return token
+}
+
+func (s *server) getIdentityFromReq(r *http.Request) (*authlib.Identity, error) {
+	return authlib.ParseToken(s.getTokenFromReq(r), s.p.sharedSecret)
 }
