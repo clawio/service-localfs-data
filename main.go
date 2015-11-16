@@ -15,6 +15,7 @@ const (
 	serviceID         = "CLAWIO_LOCALSTOREDATA"
 	dataDirEnvar      = serviceID + "_DATADIR"
 	tmpDirEnvar       = serviceID + "_TMPDIR"
+	checksumEnvar     = serviceID + "_CHECKSUM"
 	portEnvar         = serviceID + "_PORT"
 	propEnvar         = serviceID + "_PROP"
 	sharedSecretEnvar = "CLAWIO_SHAREDSECRET"
@@ -25,6 +26,7 @@ const (
 type environ struct {
 	dataDir      string
 	tmpDir       string
+	checksum     string
 	port         int
 	prop         string
 	sharedSecret string
@@ -34,6 +36,7 @@ func getEnviron() (*environ, error) {
 	e := &environ{}
 	e.dataDir = os.Getenv(dataDirEnvar)
 	e.tmpDir = os.Getenv(tmpDirEnvar)
+	e.checksum = os.Getenv(checksumEnvar)
 	port, err := strconv.Atoi(os.Getenv(portEnvar))
 	if err != nil {
 		return nil, err
@@ -50,10 +53,6 @@ func printEnviron(e *environ) {
 	log.Printf("%s=%d\n", portEnvar, e.port)
 	log.Printf("%s=%s\n", propEnvar, e.prop)
 	log.Printf("%s=%s\n", sharedSecretEnvar, "******")
-}
-
-func setUpLog() {
-
 }
 
 func main() {
@@ -93,6 +92,7 @@ func main() {
 	p := &newServerParams{}
 	p.dataDir = env.dataDir
 	p.tmpDir = env.tmpDir
+	p.checksum = env.checksum
 	p.prop = env.prop
 	p.sharedSecret = env.sharedSecret
 

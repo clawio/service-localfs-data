@@ -23,6 +23,7 @@ const (
 type newServerParams struct {
 	dataDir      string
 	tmpDir       string
+	checksum     string
 	prop         string
 	sharedSecret string
 }
