@@ -111,10 +111,9 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	clientSumType, clientSum := s.getChecksumInfo(r)
+
 	if isChecksumed {
-
-		clientSumType, clientSum := s.getChecksumInfo(r)
-
 		log.Infof("file sent with checksum %s", clientSumType+":"+clientSum)
 
 		// checksums are given in hexadecimal format.
@@ -167,6 +166,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	in := &pb.PutReq{}
 	in.Path = p
 	in.AccessToken = authlib.MustFromTokenContext(ctx)
+	in.Checksum = clientSumType + ":" + clientSum
 
 	_, err = client.Put(ctx, in)
 	if err != nil {
