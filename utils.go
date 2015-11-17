@@ -106,3 +106,36 @@ func getTraceID(r *http.Request) string {
 	}
 	return traceID
 }
+
+// getChecksumInfo retrieves checksum information sent by a client via query params or via header.
+// If the checksum is sent in the header the header must be called X-Checksum and the content must be:
+// <checksumtype>:<checksum>.
+// If the info is sent in the URL the name of the query param is checksum and thas the same format
+// as in the header.
+func (a *server) getChecksumInfo(r *http.Request) (string, string) {
+
+	var checksumInfo string
+	var checksumType string
+	var checksum string
+
+	// 1. Get checksum info from query params
+	checksumInfo = r.URL.Query().Get("checksum")
+	if checksumInfo != "" {
+		parts := strings.Split(checksumInfo, ":")
+		if len(parts) > 1 {
+			checksumType = parts[0]
+			checksum = parts[1]
+		}
+	}
+
+	// 2. Get checksum info from header
+	if checksumInfo == "" { // If already provided in URL we don´t override
+		checksumInfo = r.Header.Get("CIO-Checksum")
+		parts := strings.Split(checksumInfo, ":")
+		if len(parts) > 1 {
+			checksumType = parts[0]
+			checksum = parts[1]
+		}
+	}
+	return checksumType, checksum
+}

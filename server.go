@@ -1,12 +1,17 @@
 package main
 
 import (
+	"crypto/md5"
+	"crypto/sha1"
+	"fmt"
 	authlib "github.com/clawio/service.auth/lib"
 	"github.com/clawio/service.localstore.data/lib"
 	pb "github.com/clawio/service.localstore.prop/proto"
 	"github.com/rs/xlog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"hash"
+	"hash/adler32"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -73,15 +78,59 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	log.Infof("created tmp file %s", tmpFn)
 
+	var mw io.Writer
+	var hasher hash.Hash
+	var isChecksumed bool
+	var computedChecksum string
+
+	switch s.p.checksum {
+	case "md5":
+		hasher = md5.New()
+		isChecksumed = true
+		mw = io.MultiWriter(tmpFile, hasher)
+	case "sha1":
+		hasher = sha1.New()
+		isChecksumed = true
+		mw = io.MultiWriter(tmpFile, hasher)
+	case "adler32":
+		hasher = adler32.New()
+		isChecksumed = true
+		mw = io.MultiWriter(tmpFile, hasher)
+	default:
+		mw = io.MultiWriter(tmpFile)
+	}
+
 	// TODO(labkode) Sometimes ContentLength = -1 because it is a binary
 	// upload with TransferEncoding: chunked.
 	// Instead using Copy we shoudl use a LimitedReader with a max file upload
 	// configuration value.
-	_, err = io.Copy(tmpFile, r.Body)
+	_, err = io.Copy(mw, r.Body)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
+	}
+
+	if isChecksumed {
+
+		clientSumType, clientSum := s.getChecksumInfo(r)
+
+		log.Infof("file sent with checksum %s", clientSumType+":"+clientSum)
+
+		// checksums are given in hexadecimal format.
+		computedChecksum = fmt.Sprintf("%x", string(hasher.Sum(nil)))
+
+		if clientSumType == s.p.checksum && clientSum != "" {
+
+			isCorrupted := computedChecksum != clientSum
+
+			if isCorrupted {
+				log.Errorf("corrupted file. expected %s and got %s",
+					s.p.checksum+":"+computedChecksum, clientSumType+":"+clientSum)
+				http.Error(w, "", http.StatusPreconditionFailed)
+				return
+			}
+		}
 	}
 
 	log.Infof("copied r.Body into tmp file %s", tmpFn)
