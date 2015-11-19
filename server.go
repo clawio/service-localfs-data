@@ -6,7 +6,7 @@ import (
 	"fmt"
 	authlib "github.com/clawio/service.auth/lib"
 	"github.com/clawio/service.localstore.data/lib"
-	pb "github.com/clawio/service.localstore.prop/proto"
+	pb "github.com/clawio/service.localstore.data/proto/propagator"
 	"github.com/rs/xlog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

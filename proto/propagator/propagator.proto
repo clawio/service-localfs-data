@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package localstore;
+package propagator;
 
 service Prop {
     rpc Put(PutReq) returns (Void) {}
-    //rpc Get(GetReq) returns (Record) {}
+    rpc Get(GetReq) returns (Record) {}
     //rpc Cp(CpReq) returns (Void) {}
-    //rpc Mv(MvReq) returns (Void) {}
-    //rpc Rm(RmReq) returns (Void) {}
+    rpc Mv(MvReq) returns (Void) {}
+    rpc Rm(RmReq) returns (Void) {}
 }
 
 message Void {
@@ -20,12 +20,11 @@ message PutReq {
     string checksum = 3;
 }
 
-/*
 message GetReq {
     string access_token = 1;
     string path = 2;
+    bool force_creation = 3;
 }
-
 
 message RmReq {
     string access_token = 1;
@@ -38,11 +37,13 @@ message MvReq {
     string dst = 3;
 }
 
+/*
 message CpReq {
     string access_token = 1;
     string src = 2;
     string dst = 3;
 }
+*/
 
 message Record {
     string id = 1;
@@ -51,5 +52,4 @@ message Record {
     uint32 modified = 4;
     string etag = 5; 
 }
-*/
 
