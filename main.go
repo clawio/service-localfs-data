@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/rs/xaccess"
 	"github.com/rs/xhandler"
-	"github.com/rs/xlog"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strconv"
@@ -48,47 +46,28 @@ func getEnviron() (*environ, error) {
 }
 
 func printEnviron(e *environ) {
-	log.Printf("%s=%s\n", dataDirEnvar, e.dataDir)
-	log.Printf("%s=%s\n", tmpDirEnvar, e.tmpDir)
-	log.Printf("%s=%d\n", portEnvar, e.port)
-	log.Printf("%s=%s\n", propEnvar, e.prop)
-	log.Printf("%s=%s\n", sharedSecretEnvar, "******")
+	log.Info("%s=%s\n", dataDirEnvar, e.dataDir)
+	log.Info("%s=%s\n", tmpDirEnvar, e.tmpDir)
+	log.Info("%s=%d\n", portEnvar, e.port)
+	log.Info("%s=%s\n", propEnvar, e.prop)
+	log.Info("%s=%s\n", sharedSecretEnvar, "******")
 }
 
 func main() {
 
-	host, _ := os.Hostname()
-	conf := xlog.Config{
-		// Log info level and higher
-		Level: xlog.LevelDebug,
-		// Set some global env fields
-		Fields: xlog.F{
-			"svc":  serviceID,
-			"host": host,
-		},
-		// Output everything on console
-		Output: xlog.NewOutputChannel(xlog.NewConsoleOutput()),
-	}
-
-	xl := xlog.New(conf)
-
 	c := xhandler.Chain{}
-	c.UseC(xlog.NewHandler(conf))
 	c.UseC(xhandler.CloseHandler)
-	c.UseC(xaccess.NewHandler())
 
-	// Plug the xlog handler's input to Go's default logger
-	log.SetOutput(xl)
-
-	log.Printf("Service %s started", serviceID)
+	log.Info("Service %s started", serviceID)
 
 	env, err := getEnviron()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Error(err)
 		os.Exit(1)
 	}
 
 	printEnviron(env)
+
 	p := &newServerParams{}
 	p.dataDir = env.dataDir
 	p.tmpDir = env.tmpDir
@@ -98,10 +77,10 @@ func main() {
 
 	srv, err := newServer(p)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Error(err)
 		os.Exit(1)
 	}
 
 	http.Handle(endPoint, c.Handler(srv))
-	fmt.Fprintln(os.Stderr, http.ListenAndServe(fmt.Sprintf(":%d", env.port), nil))
+	log.Error(http.ListenAndServe(fmt.Sprintf(":%d", env.port), nil))
 }

@@ -7,7 +7,7 @@ import (
 	authlib "github.com/clawio/service.auth/lib"
 	"github.com/clawio/service.localstore.data/lib"
 	pb "github.com/clawio/service.localstore.data/proto/propagator"
-	"github.com/rs/xlog"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"hash"
@@ -47,12 +47,16 @@ type server struct {
 
 func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	log := xlog.FromContext(ctx)
-	log.SetField("trace", getTraceID(r))
+	reqLogger := log.WithField("trace", getTraceID(r))
+	ctx = NewLogContext(ctx, reqLogger)
+
+	reqLogger.WithField("url", r.URL.String())
 
 	if strings.ToUpper(r.Method) == "PUT" {
+		reqLogger.WithField("op", "upload")
 		s.authHandler(ctx, w, r, s.upload)
 	} else if strings.ToUpper(r.Method) == "GET" {
+		reqLogger.WithField("op", "download")
 		s.authHandler(ctx, w, r, s.download)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
@@ -62,7 +66,7 @@ func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.
 
 func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	log := xlog.FromContext(ctx)
+	log := MustFromLogContext(ctx)
 	p := lib.MustFromContext(ctx)
 
 	pp := s.getPhysicalPath(p)
@@ -182,7 +186,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	log := xlog.FromContext(ctx)
+	log := MustFromLogContext(ctx)
 	p := lib.MustFromContext(ctx)
 
 	pp := s.getPhysicalPath(p)
@@ -235,7 +239,7 @@ func (s *server) download(ctx context.Context, w http.ResponseWriter, r *http.Re
 func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http.Request,
 	next func(ctx context.Context, w http.ResponseWriter, r *http.Request)) {
 
-	log := xlog.FromContext(ctx)
+	log := MustFromLogContext(ctx)
 
 	idt, err := s.getIdentityFromReq(r)
 	if err != nil {
@@ -248,7 +252,7 @@ func (s *server) authHandler(ctx context.Context, w http.ResponseWriter, r *http
 
 	if !isUnderHome(p, idt) {
 		// TODO use here share service
-		log.Warnf("access denied to %s accessing %s", *idt, p)
+		log.Warnf("%s cannot access %s", *idt, p)
 		http.Error(w, "", http.StatusForbidden)
 		return
 	}

@@ -3,6 +3,8 @@ package main
 import (
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/clawio/service.auth/lib"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"os"
@@ -138,4 +140,31 @@ func (a *server) getChecksumInfo(r *http.Request) (string, string) {
 		}
 	}
 	return checksumType, checksum
+}
+
+// The key type is unexported to prevent collisions with context keys defined in
+// other packages.
+type key int
+
+// logKey is the context key for an identity.  Its value of zero is
+// arbitrary.  If this package defined other context keys, they would have
+// different integer values.
+const logKey key = 0
+
+// NewLogContext returns a new Context carrying a logger.
+func NewLogContext(ctx context.Context, logger *log.Entry) context.Context {
+	return context.WithValue(ctx, logKey, logger)
+
+}
+
+// MustFromLogContext extracts the logger from ctx.
+// If not present it panics.
+func MustFromLogContext(ctx context.Context) *log.Entry {
+	val, ok := ctx.Value(logKey).(*log.Entry)
+	if !ok {
+		panic("logger is not registered")
+
+	}
+	return val
+
 }

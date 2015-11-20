@@ -21,25 +21,13 @@
 			"Rev": "5baca1b63153b1a82014546382edbdd302b138b6"
 		},
 		{
-			"ImportPath": "github.com/rs/xaccess",
-			"Rev": "209e73e1a62aae2725ec615ec9d83e0a9f4362ad"
-		},
-		{
 			"ImportPath": "github.com/rs/xhandler",
 			"Rev": "8431b30f293907f6613667c03df1f089e0fb8741"
 		},
 		{
-			"ImportPath": "github.com/rs/xlog",
-			"Rev": "8c68485b36cc494d36e9d77a02bcd7df12848ac8"
-		},
-		{
-			"ImportPath": "github.com/rs/xstats",
-			"Rev": "e0eac909e8830bc57152e8bb72b03fa2b1abe0b9"
-		},
-		{
-			"ImportPath": "github.com/zenazn/goji/web/mutil",
-			"Comment": "v0.9.0-29-g46b46e0",
-			"Rev": "46b46e00f46dda650e04f0bceeb7c40732cd5988"
+			"ImportPath": "github.com/sirupsen/logrus",
+			"Comment": "v0.8.6-13-g84b968c",
+			"Rev": "84b968cb9f82d727044973f8255489bbe15e9948"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
