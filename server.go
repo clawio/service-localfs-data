@@ -47,16 +47,18 @@ type server struct {
 
 func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	reqLogger := log.WithField("trace", getTraceID(r))
+	traceID := getTraceID(r)
+	reqLogger := log.WithField("trace", traceID)
+	ctx = newGRPCTraceContext(ctx, traceID)
 	ctx = NewLogContext(ctx, reqLogger)
 
-	reqLogger.WithField("url", r.URL.String())
+	reqLogger.WithField("url", r.URL.String()).Info()
 
 	if strings.ToUpper(r.Method) == "PUT" {
-		reqLogger.WithField("op", "upload")
+		reqLogger.WithField("op", "upload").Info()
 		s.authHandler(ctx, w, r, s.upload)
 	} else if strings.ToUpper(r.Method) == "GET" {
-		reqLogger.WithField("op", "download")
+		reqLogger.WithField("op", "download").Info()
 		s.authHandler(ctx, w, r, s.download)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
@@ -115,21 +117,21 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	clientSumType, clientSum := s.getChecksumInfo(r)
+	chk := s.getChecksumInfo(r)
 
 	if isChecksumed {
-		log.Infof("file sent with checksum %s", clientSumType+":"+clientSum)
+		log.Infof("file sent with checksum %s", chk.String())
 
 		// checksums are given in hexadecimal format.
 		computedChecksum = fmt.Sprintf("%x", string(hasher.Sum(nil)))
 
-		if clientSumType == s.p.checksum && clientSum != "" {
+		if chk.Type == s.p.checksum && chk.Type != "" {
 
-			isCorrupted := computedChecksum != clientSum
+			isCorrupted := computedChecksum != chk.Sum
 
 			if isCorrupted {
 				log.Errorf("corrupted file. expected %s and got %s",
-					s.p.checksum+":"+computedChecksum, clientSumType+":"+clientSum)
+					s.p.checksum+":"+computedChecksum, chk.Sum)
 				http.Error(w, "", http.StatusPreconditionFailed)
 				return
 			}
@@ -163,14 +165,14 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 	defer con.Close()
 
-	log.Infof("created connection to prop")
+	log.Infof("created connection to %s", s.p.prop)
 
 	client := pb.NewPropClient(con)
 
 	in := &pb.PutReq{}
 	in.Path = p
 	in.AccessToken = authlib.MustFromTokenContext(ctx)
-	in.Checksum = clientSumType + ":" + clientSum
+	in.Checksum = chk.String()
 
 	_, err = client.Put(ctx, in)
 	if err != nil {
@@ -179,7 +181,7 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	log.Infof("putted path %s into prop", p)
+	log.Infof("saved path %s into %s", p, s.p.prop)
 
 	w.WriteHeader(http.StatusCreated)
 }

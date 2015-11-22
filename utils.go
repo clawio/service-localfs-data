@@ -5,6 +5,7 @@ import (
 	"github.com/clawio/service.auth/lib"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/metadata"
 	"io"
 	"net/http"
 	"os"
@@ -109,16 +110,31 @@ func getTraceID(r *http.Request) string {
 	return traceID
 }
 
+func newGRPCTraceContext(ctx context.Context, trace string) context.Context {
+	md := metadata.Pairs("trace", trace)
+	ctx = metadata.NewContext(ctx, md)
+	return ctx
+}
+
+type checksum struct {
+	Type string
+	Sum  string
+}
+
+func (c *checksum) String() string {
+	return c.Type + ":" + c.Sum
+}
+
 // getChecksumInfo retrieves checksum information sent by a client via query params or via header.
 // If the checksum is sent in the header the header must be called X-Checksum and the content must be:
 // <checksumtype>:<checksum>.
 // If the info is sent in the URL the name of the query param is checksum and thas the same format
 // as in the header.
-func (a *server) getChecksumInfo(r *http.Request) (string, string) {
+func (a *server) getChecksumInfo(r *http.Request) *checksum {
 
 	var checksumInfo string
 	var checksumType string
-	var checksum string
+	var sum string
 
 	// 1. Get checksum info from query params
 	checksumInfo = r.URL.Query().Get("checksum")
@@ -126,7 +142,7 @@ func (a *server) getChecksumInfo(r *http.Request) (string, string) {
 		parts := strings.Split(checksumInfo, ":")
 		if len(parts) > 1 {
 			checksumType = parts[0]
-			checksum = parts[1]
+			sum = parts[1]
 		}
 	}
 
@@ -136,10 +152,11 @@ func (a *server) getChecksumInfo(r *http.Request) (string, string) {
 		parts := strings.Split(checksumInfo, ":")
 		if len(parts) > 1 {
 			checksumType = parts[0]
-			checksum = parts[1]
+			sum = parts[1]
 		}
 	}
-	return checksumType, checksum
+
+	return &checksum{checksumType, sum}
 }
 
 // The key type is unexported to prevent collisions with context keys defined in
