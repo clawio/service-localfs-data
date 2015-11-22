@@ -52,7 +52,10 @@ func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.
 	ctx = newGRPCTraceContext(ctx, traceID)
 	ctx = NewLogContext(ctx, reqLogger)
 
-	reqLogger.WithField("url", r.URL.String()).Info()
+	reqLogger.WithField("url", r.Method+" "+r.URL.String()).Info("rstat")
+	defer func() {
+		reqLogger.Info("rend")
+	}()
 
 	if strings.ToUpper(r.Method) == "PUT" {
 		reqLogger.WithField("op", "upload").Info()

@@ -122,6 +122,9 @@ type checksum struct {
 }
 
 func (c *checksum) String() string {
+	if c.Type == "" {
+		return ""
+	}
 	return c.Type + ":" + c.Sum
 }
 

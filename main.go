@@ -46,11 +46,11 @@ func getEnviron() (*environ, error) {
 }
 
 func printEnviron(e *environ) {
-	log.Info("%s=%s\n", dataDirEnvar, e.dataDir)
-	log.Info("%s=%s\n", tmpDirEnvar, e.tmpDir)
-	log.Info("%s=%d\n", portEnvar, e.port)
-	log.Info("%s=%s\n", propEnvar, e.prop)
-	log.Info("%s=%s\n", sharedSecretEnvar, "******")
+	log.Infof("%s=%s\n", dataDirEnvar, e.dataDir)
+	log.Infof("%s=%s\n", tmpDirEnvar, e.tmpDir)
+	log.Infof("%s=%d\n", portEnvar, e.port)
+	log.Infof("%s=%s\n", propEnvar, e.prop)
+	log.Infof("%s=%s\n", sharedSecretEnvar, "******")
 }
 
 func main() {
