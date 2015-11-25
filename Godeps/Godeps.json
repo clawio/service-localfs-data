@@ -30,6 +30,11 @@
 			"Rev": "84b968cb9f82d727044973f8255489bbe15e9948"
 		},
 		{
+			"ImportPath": "github.com/zenazn/goji/web/mutil",
+			"Comment": "v0.9.0-29-g46b46e0",
+			"Rev": "46b46e00f46dda650e04f0bceeb7c40732cd5988"
+		},
+		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
 		},

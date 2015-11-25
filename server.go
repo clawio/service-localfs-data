@@ -8,6 +8,7 @@ import (
 	"github.com/clawio/service.localstore.data/lib"
 	pb "github.com/clawio/service.localstore.data/proto/propagator"
 	log "github.com/sirupsen/logrus"
+	"github.com/zenazn/goji/web/mutil"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"hash"
@@ -19,6 +20,7 @@ import (
 	"path"
 	"strings"
 	"syscall"
+	"time"
 )
 
 const (
@@ -52,17 +54,37 @@ func (s *server) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.
 	ctx = newGRPCTraceContext(ctx, traceID)
 	ctx = NewLogContext(ctx, reqLogger)
 
-	reqLogger.WithField("url", r.Method+" "+r.URL.String()).Info("rstat")
+	reqLogger.Info("request started")
+
+	// Time request
+	reqStart := time.Now()
+
+	// Sniff the status and content size for logging
+	lw := mutil.WrapWriter(w)
+
 	defer func() {
-		reqLogger.Info("rend")
+		// Compute request duration
+		reqDur := time.Since(reqStart)
+
+		// Log access info
+		reqLogger.WithFields(log.Fields{
+			"method":      r.Method,
+			"type":        "access",
+			"status_code": lw.Status(),
+			"duration":    reqDur.Seconds(),
+			"size":        lw.BytesWritten(),
+		}).Infof("%s %s %03d", r.Method, r.URL.String(), lw.Status())
+
+		reqLogger.Info("request finished")
+
 	}()
 
 	if strings.ToUpper(r.Method) == "PUT" {
 		reqLogger.WithField("op", "upload").Info()
-		s.authHandler(ctx, w, r, s.upload)
+		s.authHandler(ctx, lw, r, s.upload)
 	} else if strings.ToUpper(r.Method) == "GET" {
 		reqLogger.WithField("op", "download").Info()
-		s.authHandler(ctx, w, r, s.download)
+		s.authHandler(ctx, lw, r, s.download)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		return
