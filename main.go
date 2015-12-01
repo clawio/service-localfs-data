@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 )
 
@@ -55,7 +56,7 @@ func printEnviron(e *environ) {
 }
 
 func main() {
-
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	c := xhandler.Chain{}
 	c.UseC(xhandler.CloseHandler)
 
