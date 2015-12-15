@@ -53,6 +53,10 @@
 		{
 			"ImportPath": "google.golang.org/grpc",
 			"Rev": "1f1a4999ca75ba4fd6d5c91233383a170034a1a5"
-		}
+		},
+        {
+            "ImportPath": "golang.org/x/sys/unix",
+            "Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
+        }
 	]
 }
