@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	serviceID         = "CLAWIO_LOCALSTOREDATA"
+	serviceID         = "CLAWIO_LOCALFS_DATA"
 	dataDirEnvar      = serviceID + "_DATADIR"
 	tmpDirEnvar       = serviceID + "_TMPDIR"
 	checksumEnvar     = serviceID + "_CHECKSUM"
@@ -76,6 +76,16 @@ func main() {
 	p.checksum = env.checksum
 	p.prop = env.prop
 	p.sharedSecret = env.sharedSecret
+
+	// Create data and tmp dirs
+	if err := os.MkdirAll(p.dataDir, 0644); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	if err := os.MkdirAll(p.tmpDir, 0644); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
 	srv, err := newServer(p)
 	if err != nil {

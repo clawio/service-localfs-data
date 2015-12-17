@@ -2,7 +2,7 @@ package main
 
 import (
 	"code.google.com/p/go-uuid/uuid"
-	"github.com/clawio/service.auth/lib"
+	"github.com/clawio/service-auth/lib"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"

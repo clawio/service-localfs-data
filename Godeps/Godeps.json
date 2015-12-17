@@ -1,33 +1,33 @@
 {
-	"ImportPath": "github.com/clawio/service.localstore.data",
+	"ImportPath": "github.com/clawio/service-localfs-data",
 	"GoVersion": "go1.5",
 	"Deps": [
 		{
 			"ImportPath": "code.google.com/p/go-uuid/uuid",
 			"Comment": "null-15",
-			"Rev": "35bc42037350f0078e3c974c6ea690f1926603ab"
+			"Rev": "'35bc42037350f0078e3c974c6ea690f1926603ab'"
 		},
 		{
-			"ImportPath": "github.com/clawio/service.auth/lib",
-			"Rev": "46b88e0873a87da680ff30911274f657d2f232e2"
+			"ImportPath": "github.com/clawio/service-auth/lib",
+			"Rev": "37f9431977a2d19a02605bee3731973d893aa630"
 		},
 		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
-			"Comment": "v2.3.0-3-g3b55c4a",
-			"Rev": "3b55c4adf0c509e95f815b0cbb36424c7d49c73c"
+			"Comment": "v2.4.0",
+			"Rev": "f164e17f59b82642a3895ba065c385db6c547344"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
-			"Rev": "5baca1b63153b1a82014546382edbdd302b138b6"
+			"Rev": "68415e7123da32b07eab49c96d2c4d6158360e9b"
 		},
 		{
 			"ImportPath": "github.com/rs/xhandler",
-			"Rev": "8431b30f293907f6613667c03df1f089e0fb8741"
+			"Rev": "3107bbd3070169141bfc72494b1ea2417fdd789b"
 		},
 		{
 			"ImportPath": "github.com/sirupsen/logrus",
-			"Comment": "v0.8.6-13-g84b968c",
-			"Rev": "84b968cb9f82d727044973f8255489bbe15e9948"
+			"Comment": "v0.8.7-53-g446d1c1",
+			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/web/mutil",
@@ -36,27 +36,19 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
-		},
-		{
-			"ImportPath": "golang.org/x/net/http2",
-			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
-		},
-		{
-			"ImportPath": "golang.org/x/net/internal/timeseries",
-			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
+			"Rev": "28273ec927bee3bea305f112fc28ceee575ea893"
 		},
 		{
 			"ImportPath": "golang.org/x/net/trace",
-			"Rev": "b4e17d61b15679caf2335da776c614169a1b4643"
+			"Rev": "28273ec927bee3bea305f112fc28ceee575ea893"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc",
 			"Rev": "1f1a4999ca75ba4fd6d5c91233383a170034a1a5"
-		},
-        {
-            "ImportPath": "golang.org/x/sys/unix",
-            "Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
-        }
+		}
 	]
 }
