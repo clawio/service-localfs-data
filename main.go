@@ -42,6 +42,7 @@ func getEnviron() (*environ, error) {
 	if err != nil {
 		return nil, err
 	}
+	e.port = port
 	e.logLevel = os.Getenv(logLevelEnvar)
 	e.sharedSecret = os.Getenv(sharedSecretEnvar)
 	e.prop = os.Getenv(propEnvar)
@@ -69,11 +70,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Infof("Service %s started", serviceID)
-	log.SetLevel(log.ParseLevel(env.logLevel))
-	printEnviron(env)
+	l, err := log.ParseLevel(env.logLevel)
+	if err != nil {
+		l = log.ErrorLevel
+	}
+	log.SetLevel(l)
 
-	log.SetLevel(logrus.Level(env.logLevel))
+	log.Infof("Service %s started", serviceID)
+
+	printEnviron(env)
 
 	p := &newServerParams{}
 	p.dataDir = env.dataDir
