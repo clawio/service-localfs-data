@@ -1,8 +1,8 @@
 package main
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"github.com/clawio/service-auth/lib"
+	"github.com/nu7hatch/gouuid"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
@@ -102,12 +102,16 @@ func copyDir(src, dst string) (err error) {
 
 // getTraceID returns the traceID that comes in the request
 // or generate a new one
-func getTraceID(r *http.Request) string {
+func getTraceID(r *http.Request) (string, error) {
 	traceID := r.Header.Get("CIO-TraceID")
 	if traceID == "" {
-		return uuid.New()
+		_uuid, err := uuid.NewV4()
+		if err != nil {
+			return "", err
+		}
+		return _uuid.String(), nil
 	}
-	return traceID
+	return traceID, nil
 }
 
 func newGRPCTraceContext(ctx context.Context, trace string) context.Context {
