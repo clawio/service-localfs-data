@@ -3,13 +3,8 @@
 	"GoVersion": "go1.5",
 	"Deps": [
 		{
-			"ImportPath": "code.google.com/p/go-uuid/uuid",
-			"Comment": "null-15",
-			"Rev": "'35bc42037350f0078e3c974c6ea690f1926603ab'"
-		},
-		{
 			"ImportPath": "github.com/clawio/service-auth/lib",
-			"Rev": "37f9431977a2d19a02605bee3731973d893aa630"
+			"Rev": "b0f99fe42931812f169e461adac0a4acc966f98b"
 		},
 		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
@@ -18,7 +13,11 @@
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
-			"Rev": "68415e7123da32b07eab49c96d2c4d6158360e9b"
+			"Rev": "5baca1b63153b1a82014546382edbdd302b138b6"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 		},
 		{
 			"ImportPath": "github.com/rs/xhandler",
@@ -36,6 +35,14 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
+			"Rev": "28273ec927bee3bea305f112fc28ceee575ea893"
+		},
+		{
+			"ImportPath": "golang.org/x/net/http2",
+			"Rev": "28273ec927bee3bea305f112fc28ceee575ea893"
+		},
+		{
+			"ImportPath": "golang.org/x/net/internal/timeseries",
 			"Rev": "28273ec927bee3bea305f112fc28ceee575ea893"
 		},
 		{
