@@ -15,6 +15,7 @@ import (
 	"hash/adler32"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"path"
@@ -213,6 +214,18 @@ func (s *server) upload(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	log.Infof("saved path %s into %s", p, s.p.prop)
+
+	// Generate load for stat-nochildren benchmakr scenario.
+	// This code can only reside in a feature branch NEVER on master
+	// TODO(labkode) generate load
+
+	var i int = 1
+	for i < 300 {
+		rand.Seed(time.Now().UnixNano())
+		rand.Intn(300)
+		i++
+
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }
