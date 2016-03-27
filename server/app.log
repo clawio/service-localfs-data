@@ -1,0 +1,16 @@
+{"level":"info","msg":"Starting new service-localfs-data--d6305213-70b8-45e1-6e88-493f6342fb9a server","time":"2016-03-26T23:10:37+01:00"}
+{"level":"info","msg":"Listening on [::]:58002","time":"2016-03-26T23:10:37+01:00"}
+{"level":"info","msg":"Received signal interrupt","time":"2016-03-26T23:20:47+01:00"}
+{"level":"info","msg":"Stopping service-localfs-data--d6305213-70b8-45e1-6e88-493f6342fb9a server","time":"2016-03-26T23:20:47+01:00"}
+{"level":"info","msg":"Starting new service-localfs-data--3a446d39-011b-4a93-4178-f692798aafd3 server","time":"2016-03-27T15:57:48+02:00"}
+{"level":"info","msg":"Listening on [::]:58002","time":"2016-03-27T15:57:48+02:00"}
+{"level":"info","msg":"Starting new service-localfs-data--93c14c87-3ff6-43c2-7a95-006f23b0aba9 server","time":"2016-03-27T16:06:00+02:00"}
+{"level":"fatal","msg":"server encountered a fatal error: listen tcp :58002: bind: address already in use","time":"2016-03-27T16:06:00+02:00"}
+{"level":"info","msg":"Received signal interrupt","time":"2016-03-27T16:06:07+02:00"}
+{"level":"info","msg":"Stopping service-localfs-data--3a446d39-011b-4a93-4178-f692798aafd3 server","time":"2016-03-27T16:06:07+02:00"}
+{"level":"info","msg":"Starting new service-localfs-data--a6f2149e-fe15-4b09-401d-cc217a02a9f3 server","time":"2016-03-27T16:06:10+02:00"}
+{"level":"info","msg":"Listening on [::]:58002","time":"2016-03-27T16:06:10+02:00"}
+{"level":"info","msg":"Starting new service-localfs-data--d87e7af1-06ec-429b-5f2c-f5db9dff8659 server","time":"2016-03-27T16:06:14+02:00"}
+{"level":"fatal","msg":"server encountered a fatal error: listen tcp :58002: bind: address already in use","time":"2016-03-27T16:06:14+02:00"}
+{"level":"info","msg":"Received signal interrupt","time":"2016-03-27T16:11:26+02:00"}
+{"level":"info","msg":"Stopping service-localfs-data--a6f2149e-fe15-4b09-401d-cc217a02a9f3 server","time":"2016-03-27T16:11:26+02:00"}

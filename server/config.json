@@ -1,0 +1,18 @@
+{
+	"Server": {
+		"ServerType": "simple",
+		"HTTPPort": 58002,
+		"HTTPAccessLog": "./http-access.log",
+		"Log": "./app.log",
+		"EnablePProf": true,
+		"HealthCheckType": "simple",
+		"HealthCheckPath": "/health.txt"
+	},
+	"Storage": {
+		"DataDir": "/tmp/clawio-service-localfs-data",
+		"TempDir": "/tmp",
+		"Checksum": "",
+		"PropagatorURL":"localhost:58003",
+		"AuthNURL": "http://localhost:58001/clawio/auth/v1"
+	}
+}
