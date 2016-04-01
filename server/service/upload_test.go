@@ -8,13 +8,14 @@ import (
 	"path"
 	"strings"
 
+	"github.com/clawio/codes"
 	"github.com/clawio/service-auth/server/spec"
 	"github.com/stretchr/testify/require"
 )
 
 func (suite *TestSuite) TestUploadInvalidOrEmptyToken() {
-	suite.MockAuthSDK.On("Verify", "").Once().Return(&spec.Identity{}, errors.New("test error"))
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", nil)
+	suite.MockAuthService.On("Verify", "").Once().Return(&spec.Identity{}, &codes.Response{}, errors.New("test error"))
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", nil)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -22,8 +23,8 @@ func (suite *TestSuite) TestUploadInvalidOrEmptyToken() {
 }
 
 func (suite *TestSuite) TestUploadNilBody() {
-	suite.MockAuthSDK.On("Verify", "").Once().Return(&spec.Identity{}, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", nil)
+	suite.MockAuthService.On("Verify", "").Once().Return(&spec.Identity{}, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", nil)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -33,8 +34,8 @@ func (suite *TestSuite) TestUploadNilBody() {
 func (suite *TestSuite) TestUploadUnexistentTempDir() {
 	suite.Service.Config.Storage.TempDir = "/tmp/this/not/exists"
 	body := strings.NewReader("1")
-	suite.MockAuthSDK.On("Verify", "").Once().Return(&spec.Identity{}, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(&spec.Identity{}, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -50,8 +51,8 @@ func (suite *TestSuite) TestUploadHomeDirNotCreated() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -66,8 +67,8 @@ func (suite *TestSuite) TestUploadBadServerChecksumType() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -83,8 +84,8 @@ func (suite *TestSuite) TestUploadInvalidClientChecksum() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource?checksum=abc", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource?checksum=abc", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -99,8 +100,8 @@ func (suite *TestSuite) TestUploadFileTooBig() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "testtoken").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "testtoken").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	r.Header.Set("token", "testtoken")
 	w := httptest.NewRecorder()
@@ -115,8 +116,8 @@ func (suite *TestSuite) TestUpload() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "testtoken").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "testtoken").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	r.Header.Set("token", "testtoken")
 	w := httptest.NewRecorder()
@@ -132,8 +133,8 @@ func (suite *TestSuite) TestUploadMD5Checksum() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -150,8 +151,8 @@ func (suite *TestSuite) TestUploadAdler32Checksum() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -168,8 +169,8 @@ func (suite *TestSuite) TestUploadSha1Checksum() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -186,8 +187,8 @@ func (suite *TestSuite) TestUploadSha256Checksum() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
@@ -205,8 +206,8 @@ func (suite *TestSuite) TestUploadClientChecksum() {
 		Email:       "test@test.com",
 		DisplayName: "Test",
 	}
-	suite.MockAuthSDK.On("Verify", "").Once().Return(testIdentity, nil)
-	r, err := http.NewRequest("PUT", "/clawio/data/v1/upload/testresource", body)
+	suite.MockAuthService.On("Verify", "").Once().Return(testIdentity, &codes.Response{}, nil)
+	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/testresource", body)
 	require.Nil(suite.T(), err)
 	r.Header.Set("checksum", "md5:c4ca4238a0b923820dcc509a6f75849b")
 	w := httptest.NewRecorder()

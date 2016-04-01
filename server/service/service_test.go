@@ -8,16 +8,18 @@ import (
 
 	"github.com/NYTimes/gizmo/config"
 	"github.com/NYTimes/gizmo/server"
-	"github.com/clawio/service-localfs-data/server/service/mock_authsdk"
+	"github.com/clawio/sdk"
+	"github.com/clawio/sdk/mocks"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type TestSuite struct {
 	suite.Suite
-	MockAuthSDK *mock_authsdk.MockSDK
-	Service     *Service
-	Server      *server.SimpleServer
+	MockAuthService *mocks.MockAuthService
+	SDK             *sdk.SDK
+	Service         *Service
+	Server          *server.SimpleServer
 }
 
 func Test(t *testing.T) {
@@ -25,20 +27,24 @@ func Test(t *testing.T) {
 }
 
 func (suite *TestSuite) SetupTest() {
-	mockAuthSDK := &mock_authsdk.MockSDK{}
 	cfg := &Config{
 		Server: &config.Server{},
 		Storage: &Storage{
 			TempDir:            "/tmp",
 			DataDir:            "/tmp",
-			RequestBodyMaxSize: 1024, // 1KB
+			RequestBodyMaxSize: 1024, // 1KiB
 		},
 	}
+	mockAuthService := &mocks.MockAuthService{}
+	s := &sdk.SDK{}
+	s.Auth = mockAuthService
+
 	svc := &Service{}
-	svc.AuthNSDK = mockAuthSDK
+	svc.SDK = s
 	svc.Config = cfg
+
 	suite.Service = svc
-	suite.MockAuthSDK = mockAuthSDK
+	suite.MockAuthService = mockAuthService
 	serv := server.NewSimpleServer(cfg.Server)
 	serv.Register(suite.Service)
 	suite.Server = serv
@@ -79,11 +85,11 @@ func (suite *TestSuite) TestNewNilStorageConfig() {
 }
 
 func (suite *TestSuite) TestPrefix() {
-	require.Equal(suite.T(), "/clawio/data/v1", suite.Service.Prefix())
+	require.Equal(suite.T(), "/clawio/v1/data", suite.Service.Prefix())
 }
 
 func (suite *TestSuite) TestMetrics() {
-	r, err := http.NewRequest("GET", "/clawio/data/v1/metrics", nil)
+	r, err := http.NewRequest("GET", "/clawio/v1/data/metrics", nil)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
 	suite.Server.ServeHTTP(w, r)
