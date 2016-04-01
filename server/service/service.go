@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/NYTimes/gizmo/config"
-	"github.com/clawio/service-auth/sdk"
+	"github.com/clawio/sdk"
 	"github.com/clawio/service-auth/server/spec"
 	"github.com/gorilla/context"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,8 +22,8 @@ type (
 	// Service will implement server.Service and
 	// handle all requests to the server.
 	Service struct {
-		Config   *Config
-		AuthNSDK sdk.SDK
+		Config *Config
+		SDK    *sdk.SDK
 	}
 
 	// Config is a struct to contain all the needed
@@ -55,8 +55,10 @@ func New(cfg *Config) (*Service, error) {
 	if cfg.Storage == nil {
 		return nil, errors.New("config.storage cannot be nil")
 	}
-	authNSDK := sdk.New(cfg.Storage.AuthNURL, nil)
-	return &Service{Config: cfg, AuthNSDK: authNSDK}, nil
+	urls := &sdk.ServiceEndpoints{}
+	urls.AuthServiceBaseURL = cfg.Storage.AuthNURL
+	s := sdk.New(urls, nil)
+	return &Service{Config: cfg, SDK: s}, nil
 }
 
 // Prefix returns the string prefix used for all endpoints within
@@ -98,7 +100,7 @@ func (s *Service) getTokenFromRequest(r *http.Request) string {
 func (s *Service) AuthenticateHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := s.getTokenFromRequest(r)
-		identity, err := s.AuthNSDK.Verify(token)
+		identity, _, err := s.SDK.Auth.Verify(token)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
