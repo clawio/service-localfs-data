@@ -12,8 +12,11 @@ func main() {
 
 	server.Init("service-localfs-data", cfg.Server)
 
-	svc := service.New(cfg)
-	err := server.Register(svc)
+	svc, err := service.New(cfg)
+	if err != nil {
+		server.Log.Fatal("unable to create service: ", err)
+	}
+	err = server.Register(svc)
 	if err != nil {
 		server.Log.Fatal("unable to register service: ", err)
 	}
