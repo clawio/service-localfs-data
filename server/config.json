@@ -13,6 +13,6 @@
 		"TempDir": "/tmp",
 		"Checksum": "",
 		"PropagatorURL":"localhost:58003",
-		"AuthNURL": "http://localhost:58001/clawio/auth/v1"
+		"AuthNURL": "http://localhost:58001/clawio/v1/auth/"
 	}
 }
