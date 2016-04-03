@@ -19,21 +19,22 @@ type (
 	// idKey is a type to use as a key for storing data in the request context.
 	idKey int
 
-	// Service will implement server.Service and
+	// Service implements server.Service and
 	// handle all requests to the server.
 	Service struct {
 		Config *Config
 		SDK    *sdk.SDK
 	}
 
-	// Config is a struct to contain all the needed
-	// configuration for our Service
+	// Config is a struct that holds the
+	// configuration for Service
 	Config struct {
 		Server  *config.Server
 		Storage *Storage
 	}
 
-	// Storage is a struct that contains all
+	// Storage is a struct that holds storage
+	// configuration parameters.
 	// Storage configuration parameters.
 	Storage struct {
 		DataDir              string
