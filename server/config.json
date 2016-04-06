@@ -8,11 +8,14 @@
 		"HealthCheckType": "simple",
 		"HealthCheckPath": "/health.txt"
 	},
-	"Storage": {
-		"DataDir": "/tmp/clawio-service-localfs-data",
-		"TempDir": "/tmp",
-		"Checksum": "",
-		"PropagatorURL":"localhost:58003",
-		"AuthNURL": "http://localhost:58001/clawio/v1/auth/"
+	"General": {
+		"AuthenticationServiceBaseURL": "http://localhost:58001/clawio/v1/auth/",
+		"RequestBodyMaxSize": 8589934592
+	}, 
+	"DataController": {
+		"Type": "simple",
+		"SimpleDataDir": "/tmp/clawio-service-localfs-data",
+		"SimpleTempDir": "/tmp",
+		"SimpleChecksum": ""
 	}
 }

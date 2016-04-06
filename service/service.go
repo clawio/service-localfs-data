@@ -3,11 +3,10 @@ package service
 import (
 	"errors"
 	"net/http"
-	"path"
 
 	"github.com/NYTimes/gizmo/config"
 	"github.com/clawio/sdk"
-	"github.com/clawio/service-auth/server/spec"
+	"github.com/clawio/service-localfs-data/datacontroller"
 	"github.com/gorilla/context"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -22,28 +21,34 @@ type (
 	// Service implements server.Service and
 	// handle all requests to the server.
 	Service struct {
-		Config *Config
-		SDK    *sdk.SDK
+		Config         *Config
+		SDK            *sdk.SDK
+		DataController datacontroller.DataController
 	}
 
 	// Config is a struct that holds the
 	// configuration for Service
 	Config struct {
-		Server  *config.Server
-		Storage *Storage
+		Server         *config.Server
+		General        *GeneralConfig
+		DataController *DataControllerConfig
 	}
 
-	// Storage is a struct that holds storage
-	// configuration parameters.
-	// Storage configuration parameters.
-	Storage struct {
-		DataDir              string
-		TempDir              string
-		Checksum             string
-		PropagatorURL        string
-		AuthNURL             string
-		VerifyClientChecksum bool
-		RequestBodyMaxSize   int64
+	// GeneralConfig contains configuration parameters
+	// for general parts of the service.
+	GeneralConfig struct {
+		AuthenticationServiceBaseURL string
+		RequestBodyMaxSize           int64
+	}
+
+	// DataControllerConfig is a struct that holds
+	// configuration parameters for a data controller.
+	DataControllerConfig struct {
+		Type                       string
+		SimpleDataDir              string
+		SimpleTempDir              string
+		SimpleChecksum             string
+		SimpleVerifyClientChecksum bool
 	}
 )
 
@@ -51,15 +56,31 @@ type (
 // a new Service that implements server.Service.
 func New(cfg *Config) (*Service, error) {
 	if cfg == nil {
-		return nil, errors.New("config cannot be nil")
+		return nil, errors.New("config is nil")
 	}
-	if cfg.Storage == nil {
-		return nil, errors.New("config.storage cannot be nil")
+	if cfg.General == nil {
+		return nil, errors.New("config.General is nil")
 	}
+	if cfg.DataController == nil {
+		return nil, errors.New("config.DataController is  nil")
+	}
+
 	urls := &sdk.ServiceEndpoints{}
-	urls.AuthServiceBaseURL = cfg.Storage.AuthNURL
+	urls.AuthServiceBaseURL = cfg.General.AuthenticationServiceBaseURL
 	s := sdk.New(urls, nil)
-	return &Service{Config: cfg, SDK: s}, nil
+
+	dataController := getDataController(cfg.DataController)
+	return &Service{Config: cfg, SDK: s, DataController: dataController}, nil
+}
+
+func getDataController(cfg *DataControllerConfig) datacontroller.DataController {
+	opts := &datacontroller.SimpleDataControllerOptions{
+		DataDir:              cfg.SimpleDataDir,
+		TempDir:              cfg.SimpleTempDir,
+		Checksum:             cfg.SimpleChecksum,
+		VerifyClientChecksum: cfg.SimpleVerifyClientChecksum,
+	}
+	return datacontroller.NewSimpleDataController(opts)
 }
 
 // Prefix returns the string prefix used for all endpoints within
@@ -109,21 +130,4 @@ func (s *Service) AuthenticateHandlerFunc(handler http.HandlerFunc) http.Handler
 		context.Set(r, identityKey, identity)
 		handler(w, r)
 	}
-}
-
-func (s *Service) getStoragePath(identity *spec.Identity, path string) string {
-	homeDir := secureJoin("/", string(identity.Username[0]), identity.Username)
-	userPath := secureJoin(homeDir, path)
-	return secureJoin(s.Config.Storage.DataDir, userPath)
-}
-
-// secureJoin avoids path traversal attacks when joinning paths.
-func secureJoin(args ...string) string {
-	if len(args) > 1 {
-		s := []string{"/"}
-		s = append(s, args[1:]...)
-		jailedPath := path.Join(s...)
-		return path.Join(args[0], jailedPath)
-	}
-	return path.Join(args...)
 }

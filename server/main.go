@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/NYTimes/gizmo/config"
 	"github.com/NYTimes/gizmo/server"
-	"github.com/clawio/service-localfs-data/server/service"
+	"github.com/clawio/service-localfs-data/service"
 )
 
 func main() {
