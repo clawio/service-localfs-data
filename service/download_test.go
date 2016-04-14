@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/clawio/codes"
-	"github.com/clawio/service-auth/server/spec"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +20,6 @@ func (m *errorReader) Read(p []byte) (n int, err error) {
 
 func (suite *TestSuite) TestDownload() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("DownloadBLOB").Once().Return(reader, nil)
 	r, err := http.NewRequest("GET", "/clawio/v1/data/download/myblob", nil)
@@ -35,7 +33,6 @@ func (suite *TestSuite) TestDownload() {
 }
 func (suite *TestSuite) TestDownload_withCodeNotFound() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("DownloadBLOB").Once().Return(reader, codes.NewErr(codes.NotFound, ""))
 	r, err := http.NewRequest("GET", "/clawio/v1/data/download/myblob", nil)
@@ -46,7 +43,6 @@ func (suite *TestSuite) TestDownload_withCodeNotFound() {
 }
 func (suite *TestSuite) TestDownload_withError() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("DownloadBLOB").Once().Return(reader, errors.New("some error"))
 	r, err := http.NewRequest("GET", "/clawio/v1/data/download/myblob", nil)
@@ -56,7 +52,6 @@ func (suite *TestSuite) TestDownload_withError() {
 	require.Equal(suite.T(), http.StatusInternalServerError, w.Code)
 }
 func (suite *TestSuite) TestDownload_withErrorCopying() {
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("DownloadBLOB").Once().Return(&errorReader{}, nil)
 	r, err := http.NewRequest("GET", "/clawio/v1/data/download/myblob", nil)

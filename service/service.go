@@ -11,12 +11,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// identityKey can be used to store/retrieve a user ID in a request context.
-const identityKey idKey = 0
+const (
+	// userKey can be used to store/retrieve a user ID in a request context.
+	userKey contextKey = iota
+)
 
 type (
-	// idKey is a type to use as a key for storing data in the request context.
-	idKey int
+	// contextKey is a type to use as a key for storing data in the request context.
+	contextKey int
 
 	// Service implements server.Service and
 	// handle all requests to the server.
@@ -122,12 +124,12 @@ func (s *Service) getTokenFromRequest(r *http.Request) string {
 func (s *Service) AuthenticateHandlerFunc(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := s.getTokenFromRequest(r)
-		identity, _, err := s.SDK.Auth.Verify(token)
+		user, _, err := s.SDK.Auth.Verify(token)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
-		context.Set(r, identityKey, identity)
+		context.Set(r, userKey, user)
 		handler(w, r)
 	}
 }

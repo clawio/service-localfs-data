@@ -7,13 +7,11 @@ import (
 	"strings"
 
 	"github.com/clawio/codes"
-	"github.com/clawio/service-auth/server/spec"
 	"github.com/stretchr/testify/require"
 )
 
 func (suite *TestSuite) TestUpload() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("UploadBLOB").Once().Return(nil)
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", reader)
@@ -23,7 +21,7 @@ func (suite *TestSuite) TestUpload() {
 	require.Equal(suite.T(), http.StatusCreated, w.Code)
 }
 func (suite *TestSuite) TestUpload_withNilBody() {
-	suite.MockAuthService.On("Verify", "").Once().Return(&spec.Identity{}, &codes.Response{}, nil)
+	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", nil)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()
@@ -32,7 +30,6 @@ func (suite *TestSuite) TestUpload_withNilBody() {
 }
 func (suite *TestSuite) TestUpload_withBodyTooBig() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("UploadBLOB").Once().Return(errors.New("http: request body too large"))
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", reader)
@@ -43,7 +40,6 @@ func (suite *TestSuite) TestUpload_withBodyTooBig() {
 }
 func (suite *TestSuite) TestUpload_withError() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("UploadBLOB").Once().Return(errors.New("my test error"))
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", reader)
@@ -54,7 +50,6 @@ func (suite *TestSuite) TestUpload_withError() {
 }
 func (suite *TestSuite) TestUpload_withCodeNotFound() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("UploadBLOB").Once().Return(codes.NewErr(codes.NotFound, ""))
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", reader)
@@ -65,7 +60,6 @@ func (suite *TestSuite) TestUpload_withCodeNotFound() {
 }
 func (suite *TestSuite) TestUpload_withCodeBadChecksum() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{}
 	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, nil)
 	suite.MockDataController.On("UploadBLOB").Once().Return(codes.NewErr(codes.BadChecksum, ""))
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", reader)

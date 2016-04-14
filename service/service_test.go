@@ -10,13 +10,15 @@ import (
 	"github.com/NYTimes/gizmo/config"
 	"github.com/NYTimes/gizmo/server"
 	"github.com/clawio/codes"
+	emocks "github.com/clawio/entities/mocks"
 	"github.com/clawio/sdk"
 	"github.com/clawio/sdk/mocks"
-	"github.com/clawio/service-auth/server/spec"
 	mock_datacontroller "github.com/clawio/service-localfs-data/datacontroller/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
+
+var user = &emocks.MockUser{Username: "test"}
 
 type TestSuite struct {
 	suite.Suite
@@ -63,6 +65,9 @@ func (suite *TestSuite) SetupTest() {
 	// create homedir for user test
 	err := os.MkdirAll("/tmp/t/test", 0755)
 	require.Nil(suite.T(), err)
+
+	// configure user mock
+	user.On("GetUsername").Return("test")
 }
 
 func (suite *TestSuite) TeardownTest() {
@@ -136,7 +141,7 @@ func (suite *TestSuite) TestgetTokenFromRequest_query() {
 	require.Equal(suite.T(), "mytoken", token)
 }
 func (suite *TestSuite) TestAuthenticateHandlerFunc() {
-	suite.MockAuthService.On("Verify", "mytoken").Once().Return(&spec.Identity{Username: "test"}, &codes.Response{}, nil)
+	suite.MockAuthService.On("Verify", "mytoken").Once().Return(user, &codes.Response{}, nil)
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", nil)
 	r.Header.Set("token", "mytoken")
 	require.Nil(suite.T(), err)
@@ -145,7 +150,7 @@ func (suite *TestSuite) TestAuthenticateHandlerFunc() {
 	require.NotEqual(suite.T(), 401, w.Code)
 }
 func (suite *TestSuite) TestAuthenticateHandlerFunc_withBadToken() {
-	suite.MockAuthService.On("Verify", "").Once().Return(&spec.Identity{}, &codes.Response{}, errors.New("test error"))
+	suite.MockAuthService.On("Verify", "").Once().Return(user, &codes.Response{}, errors.New("test error"))
 	r, err := http.NewRequest("PUT", "/clawio/v1/data/upload/myblob", nil)
 	require.Nil(suite.T(), err)
 	w := httptest.NewRecorder()

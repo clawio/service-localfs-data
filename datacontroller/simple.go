@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/clawio/codes"
-	"github.com/clawio/service-auth/server/spec"
+	"github.com/clawio/entities"
 )
 
 type simpleDataController struct {
@@ -53,7 +53,7 @@ type SimpleDataControllerOptions struct {
 // 2) Optional: calculate the checksum of the blob if server-checksum is enabled.
 // 3) Optional: if a client-checksum is provided, check if it matches with the server-checksum.
 // 4) Move the blob from the temporary directory to user directory.
-func (c *simpleDataController) UploadBLOB(user *spec.Identity, pathSpec string, r io.Reader, clientchecksum string) error {
+func (c *simpleDataController) UploadBLOB(user entities.User, pathSpec string, r io.Reader, clientchecksum string) error {
 	tempFileName, err := c.saveToTempFile(r)
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (c *simpleDataController) UploadBLOB(user *spec.Identity, pathSpec string, 
 	return nil
 }
 
-func (c *simpleDataController) DownloadBLOB(user *spec.Identity, pathSpec string) (io.Reader, error) {
+func (c *simpleDataController) DownloadBLOB(user entities.User, pathSpec string) (io.Reader, error) {
 	storagePath := c.getStoragePath(user, pathSpec)
 	fd, err := os.Open(storagePath)
 	if err != nil {
@@ -138,8 +138,8 @@ func (c *simpleDataController) computeChecksum(fn string) (string, error) {
 	return checksumType + ":" + checksum, nil
 }
 
-func (c *simpleDataController) getStoragePath(user *spec.Identity, path string) string {
-	homeDir := secureJoin("/", string(user.Username[0]), user.Username)
+func (c *simpleDataController) getStoragePath(user entities.User, path string) string {
+	homeDir := secureJoin("/", string(user.GetUsername()[0]), user.GetUsername())
 	userPath := secureJoin(homeDir, path)
 	return secureJoin(c.dataDir, userPath)
 }

@@ -7,10 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/clawio/service-auth/server/spec"
+	"github.com/clawio/entities/mocks"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
+
+var user = &mocks.MockUser{Username: "test"}
 
 type TestSuite struct {
 	suite.Suite
@@ -32,6 +34,9 @@ func (suite *TestSuite) SetupTest() {
 	require.Nil(suite.T(), err)
 	suite.dataController = dataController
 	suite.simpleDataController = suite.dataController.(*simpleDataController)
+
+	// configure user mock
+	user.On("GetUsername").Return("test")
 }
 func (suite *TestSuite) TeardownTest() {
 	os.RemoveAll("/tmp/t")
@@ -48,28 +53,24 @@ func (suite *TestSuite) TestNewSimpleDataController_withNilOptions() {
 }
 func (suite *TestSuite) TestUpload() {
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "")
 	require.Nil(suite.T(), err)
 }
 func (suite *TestSuite) TestUpload_withBadTempDir() {
 	suite.simpleDataController.tempDir = "/this/does/not/exist"
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "")
 	require.NotNil(suite.T(), err)
 }
 func (suite *TestSuite) TestUpload_withChecksum() {
 	suite.simpleDataController.checksum = "md5"
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "")
 	require.Nil(suite.T(), err)
 }
 func (suite *TestSuite) TestUpload_withWrongChecksum() {
 	suite.simpleDataController.checksum = "xyz"
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "")
 	require.NotNil(suite.T(), err)
 }
@@ -77,7 +78,6 @@ func (suite *TestSuite) TestUpload_withClientChecksum() {
 	suite.simpleDataController.checksum = "md5"
 	suite.simpleDataController.verifyClientChecksum = true
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	// md5 checksum of 1 is c4ca4238a0b923820dcc509a6f75849b
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "md5:c4ca4238a0b923820dcc509a6f75849b")
 	require.Nil(suite.T(), err)
@@ -86,14 +86,12 @@ func (suite *TestSuite) TestUpload_withWrongClientChecksum() {
 	suite.simpleDataController.checksum = "md5"
 	suite.simpleDataController.verifyClientChecksum = true
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "md5:")
 	require.NotNil(suite.T(), err)
 }
 func (suite *TestSuite) TestUpload_withBadDataDir() {
 	suite.simpleDataController.dataDir = "/this/does/not/exist"
 	reader := strings.NewReader("1")
-	user := &spec.Identity{Username: "test"}
 	err := suite.dataController.UploadBLOB(user, "myblob", reader, "")
 	require.NotNil(suite.T(), err)
 }
@@ -101,7 +99,6 @@ func (suite *TestSuite) TestDownload() {
 	p := path.Join(suite.simpleDataController.tempDir, "t", "test", "myblob")
 	err := ioutil.WriteFile(p, []byte("1"), 0644)
 	require.Nil(suite.T(), err)
-	user := &spec.Identity{Username: "test"}
 	reader, err := suite.dataController.DownloadBLOB(user, "myblob")
 	require.Nil(suite.T(), err)
 	data, err := ioutil.ReadAll(reader)
@@ -110,7 +107,6 @@ func (suite *TestSuite) TestDownload() {
 }
 func (suite *TestSuite) TestDownload_withBadDataDir() {
 	suite.simpleDataController.dataDir = "/this/does/not/exist"
-	user := &spec.Identity{Username: "test"}
 	_, err := suite.dataController.DownloadBLOB(user, "myblob")
 	require.NotNil(suite.T(), err)
 }

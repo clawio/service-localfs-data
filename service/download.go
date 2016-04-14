@@ -7,7 +7,7 @@ import (
 	"github.com/NYTimes/gizmo/server"
 	"github.com/Sirupsen/logrus"
 	"github.com/clawio/codes"
-	"github.com/clawio/service-auth/server/spec"
+	"github.com/clawio/entities"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
@@ -15,8 +15,8 @@ import (
 // Download streams a file to the client.
 func (s *Service) Download(w http.ResponseWriter, r *http.Request) {
 	path := mux.Vars(r)["path"]
-	identity := context.Get(r, identityKey).(*spec.Identity)
-	reader, err := s.DataController.DownloadBLOB(identity, path)
+	user := context.Get(r, userKey).(entities.User)
+	reader, err := s.DataController.DownloadBLOB(user, path)
 	if err != nil {
 		s.handleDownloadError(err, w)
 		return
